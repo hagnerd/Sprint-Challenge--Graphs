@@ -1,59 +1,107 @@
-# Implement a class to hold room information. This should have name and
-# description attributes.
+"""
+Represents a room in the maze
+"""
+
 class Room:
-    def __init__(self, name, description, id=0, x=None, y=None):
-        self.id = id
+    """
+    Represents a room within the maze.
+    """
+    def __init__(self, name, description, room_id=0, coords=(None, None)):
+        self.id = room_id
         self.name = name
         self.description = description
-        self.n_to = None
-        self.s_to = None
-        self.e_to = None
-        self.w_to = None
-        self.x = x
-        self.y = y
+        self.neighbors = {'n': None, 's': None, 'e': None, 'w': None}
+        self.x = coords[0]
+        self.y = coords[1]
+
     def __str__(self):
         return f"\n-------------------\n\n{self.name}\n\n   {self.description}\n\n{self.get_exits_string()}\n"
-    def print_room_description(self, player):
+    def print_room_description(self):
+        """
+        Prints the room description
+        """
         print(str(self))
     def get_exits(self):
+        """
+        Finds all exits that are available for the room
+        """
         exits = []
-        if self.n_to is not None:
-            exits.append("n")
-        if self.s_to is not None:
-            exits.append("s")
-        if self.w_to is not None:
-            exits.append("w")
-        if self.e_to is not None:
-            exits.append("e")
+        possible_neighbors = ['n', 's', 'e', 'w']
+
+        for direction in possible_neighbors:
+            if self.neighbors[direction] is not None:
+                exits.append(direction)
+
         return exits
+
+    def get_exits_dict(self):
+        """
+        Returns a dictionary of only valid exits
+        """
+        exits = self.get_exits()
+        exits_dict = {}
+
+        for direction in exits:
+            exits_dict[direction] = None
+
+        return exits_dict
+
     def get_exits_string(self):
+        """
+        Returns a print friendly string of the exits
+        """
         return f"Exits: [{', '.join(self.get_exits())}]"
+
+    @staticmethod
+    def get_opposite(direction):
+        """
+        Static method that gets the opposite of a given direction
+        """
+        if direction == 'n':
+            return 's'
+
+        if direction == 's':
+            return 'n'
+
+        if direction == 'e':
+            return 'w'
+
+        if direction == 'w':
+            return 'e'
+
+        return None
+
     def connect_rooms(self, direction, connecting_room):
-        if direction == "n":
-            self.n_to = connecting_room
-            connecting_room.s_to = self
-        elif direction == "s":
-            self.s_to = connecting_room
-            connecting_room.n_to = self
-        elif direction == "e":
-            self.e_to = connecting_room
-            connecting_room.w_to = self
-        elif direction == "w":
-            self.w_to = connecting_room
-            connecting_room.e_to = self
-        else:
+        """
+        Connects the rooms
+        """
+
+        if direction not in ['n', 's', 'e', 'w']:
             print("INVALID ROOM CONNECTION")
-            return None
+            return
+
+        self.neighbors[direction] = connecting_room
+        connecting_room.neighbors[Room.get_opposite(direction)] = self
+
     def get_room_in_direction(self, direction):
-        if direction == "n":
-            return self.n_to
-        elif direction == "s":
-            return self.s_to
-        elif direction == "e":
-            return self.e_to
-        elif direction == "w":
-            return self.w_to
-        else:
+        """
+        Gets the room in a given direction
+        """
+        if direction not in ['n', 's', 'e', 'w']:
             return None
+
+        return self.neighbors[direction]
+
     def get_coords(self):
+        """
+        Gets the coordinates for a given room
+        """
         return [self.x, self.y]
+
+    def has_neighbor(self, direction):
+        """
+        Checks whether the direction given is a valid neighbor
+        """
+        exits = self.get_exits()
+
+        return direction in exits
